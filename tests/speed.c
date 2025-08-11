@@ -74,23 +74,19 @@ typedef int (*bench_fun)(void *ctx, unsigned long num);
  * Returned value is the time per iteration in nanoseconds. If the
  * benchmark function reports an error, 0.0 is returned.
  */
-static double
-do_bench(bench_fun bf, void *ctx, double threshold)
+static unsigned long
+find_bench_iterations(bench_fun bf, void *ctx, double threshold, unsigned long min_iter)
 {
 	unsigned long num;
 	int r;
 
-	/*
-	 * Alsways do a few blank runs to "train" the caches and branch
-	 * prediction.
-	 */
 	r = bf(ctx, 5);
 	if (r != 0) {
 		fprintf(stderr, "ERR: %d\n", r);
-		return 0.0;
+		return min_iter;
 	}
 
-	num = 1;
+	num = min_iter;
 	for (;;) {
 		clock_t begin, end;
 		double tt;
@@ -100,32 +96,47 @@ do_bench(bench_fun bf, void *ctx, double threshold)
 		end = clock();
 		if (r != 0) {
 			fprintf(stderr, "ERR: %d\n", r);
-			return 0.0;
+			return num;
 		}
 		tt = (double)(end - begin) / (double)CLOCKS_PER_SEC;
 		if (tt >= threshold) {
-			return tt * 1000000000.0 / (double)num;
+			return num;
 		}
-
-		/*
-		 * If the function ran for less than 0.1 seconds then
-		 * we simply double the iteration number; otherwise, we
-		 * use the run time to try to get a "correct" number of
-		 * iterations quickly.
-		 */
 		if (tt < 0.1) {
 			num <<= 1;
 		} else {
 			unsigned long num2;
-
-			num2 = (unsigned long)((double)num
-				* (threshold * 1.1) / tt);
+			num2 = (unsigned long)((double)num * (threshold * 1.1) / tt);
 			if (num2 <= num) {
 				num2 = num + 1;
 			}
 			num = num2;
 		}
 	}
+}
+
+static double
+do_bench_fixed(bench_fun bf, void *ctx, unsigned long num)
+{
+	int r;
+	clock_t begin, end;
+	double tt;
+
+	r = bf(ctx, 5);
+	if (r != 0) {
+		fprintf(stderr, "ERR: %d\n", r);
+		return 0.0;
+	}
+
+	begin = clock();
+	r = bf(ctx, num);
+	end = clock();
+	if (r != 0) {
+		fprintf(stderr, "ERR: %d\n", r);
+		return 0.0;
+	}
+	tt = (double)(end - begin) / (double)CLOCKS_PER_SEC;
+	return tt * 1000000000.0 / (double)num;
 }
 
 typedef struct {
@@ -288,6 +299,8 @@ test_speed_falcon(unsigned logn, double threshold)
 {
 	bench_context bc;
 	size_t len;
+	unsigned long min_iter = 30;
+	unsigned long bench_iter, max_iter = min_iter;
 
 	printf("%4u:", 1u << logn);
 	fflush(stdout);
@@ -312,29 +325,42 @@ test_speed_falcon(unsigned logn, double threshold)
 	bc.sigct = xmalloc(FALCON_SIG_CT_SIZE(logn));
 	bc.sigct_len = 0;
 
-	printf(" %8.2f",
-		do_bench(&bench_keygen, &bc, threshold) / 1000000.0);
+	// Find the required number of iterations for each operation, take the max
+	bench_iter = find_bench_iterations(&bench_keygen, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_expand_privkey, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_sign_dyn, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_sign_dyn_ct, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_sign_tree, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_sign_tree_ct, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_verify, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+	bench_iter = find_bench_iterations(&bench_verify_ct, &bc, threshold, min_iter);
+	if (bench_iter > max_iter) max_iter = bench_iter;
+
+	printf(" [iterations: %lu]", max_iter);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_expand_privkey, &bc, threshold) / 1000.0);
+
+	printf(" %8.2f", do_bench_fixed(&bench_keygen, &bc, max_iter) / 1000000.0);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_sign_dyn, &bc, threshold) / 1000.0);
+	printf(" %8.2f", do_bench_fixed(&bench_expand_privkey, &bc, max_iter) / 1000.0);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_sign_dyn_ct, &bc, threshold) / 1000.0);
+	printf(" %8.2f", do_bench_fixed(&bench_sign_dyn, &bc, max_iter) / 1000.0);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_sign_tree, &bc, threshold) / 1000.0);
+	printf(" %8.2f", do_bench_fixed(&bench_sign_dyn_ct, &bc, max_iter) / 1000.0);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_sign_tree_ct, &bc, threshold) / 1000.0);
+	printf(" %8.2f", do_bench_fixed(&bench_sign_tree, &bc, max_iter) / 1000.0);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_verify, &bc, threshold) / 1000.0);
+	printf(" %8.2f", do_bench_fixed(&bench_sign_tree_ct, &bc, max_iter) / 1000.0);
 	fflush(stdout);
-	printf(" %8.2f",
-		do_bench(&bench_verify_ct, &bc, threshold) / 1000.0);
+	printf(" %8.2f", do_bench_fixed(&bench_verify, &bc, max_iter) / 1000.0);
+	fflush(stdout);
+	printf(" %8.2f", do_bench_fixed(&bench_verify_ct, &bc, max_iter) / 1000.0);
 	fflush(stdout);
 
 	printf("\n");
