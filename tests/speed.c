@@ -181,7 +181,7 @@ bench_sign_dyn(void *ctx, unsigned long num)
 		CC(falcon_sign_dyn(&bc->rng,
 			bc->sig, &bc->sig_len, FALCON_SIG_COMPRESSED,
 			bc->sk, FALCON_PRIVKEY_SIZE(bc->logn),
-			"ABCDEFGH", 8, bc->tmp, bc->tmp_len));
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@", 64, bc->tmp, bc->tmp_len));
 	}
 	return 0;
 }
@@ -197,7 +197,7 @@ bench_sign_dyn_ct(void *ctx, unsigned long num)
 		CC(falcon_sign_dyn(&bc->rng,
 			bc->sigct, &bc->sigct_len, FALCON_SIG_CT,
 			bc->sk, FALCON_PRIVKEY_SIZE(bc->logn),
-			"ABCDEFGH", 8, bc->tmp, bc->tmp_len));
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@", 64, bc->tmp, bc->tmp_len));
 	}
 	return 0;
 }
@@ -228,7 +228,7 @@ bench_sign_tree(void *ctx, unsigned long num)
 		CC(falcon_sign_tree(&bc->rng,
 			bc->sig, &bc->sig_len, FALCON_SIG_COMPRESSED,
 			bc->esk,
-			"ABCDEFGH", 8, bc->tmp, bc->tmp_len));
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@", 64, bc->tmp, bc->tmp_len));
 	}
 	return 0;
 }
@@ -244,7 +244,7 @@ bench_sign_tree_ct(void *ctx, unsigned long num)
 		CC(falcon_sign_tree(&bc->rng,
 			bc->sigct, &bc->sigct_len, FALCON_SIG_CT,
 			bc->esk,
-			"ABCDEFGH", 8, bc->tmp, bc->tmp_len));
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@", 64, bc->tmp, bc->tmp_len));
 	}
 	return 0;
 }
@@ -261,7 +261,7 @@ bench_verify(void *ctx, unsigned long num)
 		CC(falcon_verify(
 			bc->sig, bc->sig_len, FALCON_SIG_COMPRESSED,
 			bc->pk, pk_len,
-			"ABCDEFGH", 8, bc->tmp, bc->tmp_len));
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@", 64, bc->tmp, bc->tmp_len));
 	}
 	return 0;
 }
@@ -278,7 +278,7 @@ bench_verify_ct(void *ctx, unsigned long num)
 		CC(falcon_verify(
 			bc->sigct, bc->sigct_len, FALCON_SIG_CT,
 			bc->pk, pk_len,
-			"ABCDEFGH", 8, bc->tmp, bc->tmp_len));
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@", 64, bc->tmp, bc->tmp_len));
 	}
 	return 0;
 }
