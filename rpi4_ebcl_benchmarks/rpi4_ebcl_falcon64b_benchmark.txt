@@ -1,0 +1,10 @@
+time threshold = 2.0000 s
+kg = keygen, ek = expand private key, sd = sign (without expanded key)
+st = sign (with expanded key), vv = verify
+sdc, stc, vvc: like sd, st and vv, but with constant-time hash-to-point
+keygen in milliseconds, other values in microseconds
+
+degree  kg(ms)   ek(us)   sd(us)  sdc(us)   st(us)  stc(us)   vv(us)  vvc(us)
+ 256:    19.72  2170.50  5262.68  5283.91  2379.29  2414.91    41.75    75.16
+ 512:    45.09  4835.81 11565.68 11622.48  5140.39  5192.19    86.85   139.30
+1024:   137.86 10652.95 25275.54 25379.14 11068.74 11170.54   183.83   278.75
