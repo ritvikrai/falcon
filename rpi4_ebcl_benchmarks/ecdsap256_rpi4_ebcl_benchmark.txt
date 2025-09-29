@@ -1,0 +1,7 @@
+version: 3.0.2
+built on: Wed Feb  5 13:19:41 2025 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -Wa,--noexecstack -Wall -Wa,--noexecstack -g -O2 -ffile-prefix-map=/build/openssl-a3Evvi/openssl-3.0.2=. -flto=auto -ffat-lto-objects -flto=auto -ffat-lto-objects -fstack-protector-strong -Wformat -Werror=format-security -DOPENSSL_TLS_SECURITY_LEVEL=2 -DOPENSSL_USE_NODELETE -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG -Wdate-time -D_FORTIFY_SOURCE=2
+CPUINFO: OPENSSL_armcap=0x83
+                              sign    verify    sign/s verify/s
+ 256 bits ecdsa (nistp256)   0.0001s   0.0003s   8496.3   2898.0

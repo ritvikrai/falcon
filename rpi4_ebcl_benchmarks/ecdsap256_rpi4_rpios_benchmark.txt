@@ -1,0 +1,7 @@
+version: 3.0.17
+built on: Fri Aug  8 17:08:42 2025 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -Wa,--noexecstack -Wall -fzero-call-used-regs=used-gpr -DOPENSSL_TLS_SECURITY_LEVEL=2 -Wa,--noexecstack -g -O2 -ffile-prefix-map=/build/openssl-jMwbmc/openssl-3.0.17=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -mbranch-protection=standard -DOPENSSL_USE_NODELETE -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG -Wdate-time -D_FORTIFY_SOURCE=2
+CPUINFO: OPENSSL_armcap=0x81
+                              sign    verify    sign/s verify/s
+ 256 bits ecdsa (nistp256)   0.0001s   0.0003s   8186.7   2868.8
